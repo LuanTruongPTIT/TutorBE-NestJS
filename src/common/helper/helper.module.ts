@@ -1,9 +1,11 @@
-import { Module } from '@nestjs/common';
+import { Global, Module } from '@nestjs/common';
 import { HelperHashService } from './services/helper.hash.service';
 import { HelperEncryptionService } from './services/helper.encryption.service';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { HelperNumberService } from './services/helper.number.service';
 
+@Global()
 @Module({
   imports: [
     JwtModule.registerAsync({
@@ -20,7 +22,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
     }),
   ],
   controllers: [],
-  providers: [HelperHashService, HelperEncryptionService],
-  exports: [HelperHashService, HelperEncryptionService],
+  providers: [HelperHashService, HelperEncryptionService, HelperNumberService],
+  exports: [HelperHashService, HelperEncryptionService, HelperNumberService],
 })
 export class HelperModule {}

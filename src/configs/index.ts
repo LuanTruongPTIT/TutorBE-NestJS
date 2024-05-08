@@ -1,2 +1,3 @@
 import AuthConfig from './auth.config';
-export default [AuthConfig];
+import DatabasesConfig from './databases.config';
+export default [AuthConfig, DatabasesConfig];

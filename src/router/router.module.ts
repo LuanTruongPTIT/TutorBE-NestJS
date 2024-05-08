@@ -3,6 +3,7 @@ import { DynamicModule, ForwardReference, Module, Type } from '@nestjs/common';
 import { RoutesUserModule } from './routes/routes.user.module';
 import { RouterModule as NestJsRouterModule } from '@nestjs/core';
 import { RoutesAuthModule } from './routes/routes.auth.module';
+import { RoutesTutorModule } from './routes/router.tutor.module';
 
 @Module({})
 export class RouterModule {
@@ -17,6 +18,7 @@ export class RouterModule {
     imports.push(
       RoutesUserModule,
       RoutesAuthModule,
+      RoutesTutorModule,
       NestJsRouterModule.register([
         {
           path: '/user',
@@ -25,6 +27,10 @@ export class RouterModule {
         {
           path: '/auth',
           module: RoutesAuthModule,
+        },
+        {
+          path: '/tutor',
+          module: RoutesTutorModule,
         },
       ]),
     );

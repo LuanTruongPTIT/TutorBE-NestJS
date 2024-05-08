@@ -7,6 +7,7 @@ import configs from 'src/configs';
 import { HelperModule } from './helper/helper.module';
 import { EmailModule } from './email/mail.module';
 import { DebuggerLoggerModule } from './debugger/debugger.logger.module';
+import { PolicyModule } from './policy/policy.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { DebuggerLoggerModule } from './debugger/debugger.logger.module';
     HelperModule,
     EmailModule,
     DebuggerLoggerModule,
+    PolicyModule,
   ],
   controllers: [],
   providers: [],

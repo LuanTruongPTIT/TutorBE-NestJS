@@ -30,7 +30,7 @@ export class AbstractRepository<Entity extends ObjectLiteral>
     return false;
   }
   async findById(id: any): Promise<Entity | null> {
-    return await this._repository.findOneBy({ id });
+    return await this._repository.findOne({ where: { id } });
   }
   async findOne(field: Record<string, any>): Promise<Entity | null> {
     return await this._repository.findOne({ where: field });

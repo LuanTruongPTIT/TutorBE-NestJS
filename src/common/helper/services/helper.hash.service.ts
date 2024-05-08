@@ -11,7 +11,10 @@ export class HelperHashService {
     return hashSync(passwordString, salt);
   }
 
-  bcryptCompare(passwordString: string, passwordHashed: string): boolean {
-    return compareSync(passwordString, passwordHashed);
+  async bcryptCompare(
+    passwordString: string,
+    passwordHashed: string,
+  ): Promise<boolean> {
+    return await compareSync(passwordString, passwordHashed);
   }
 }

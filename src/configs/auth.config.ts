@@ -7,6 +7,7 @@ export default registerAs(
     password: {
       saltLength: 8,
     },
+    prefixAuthorization: 'Bearer',
     accesstoken: {
       accesstokensecretKey: process.env.accesstokensecretKey,
       accesstokenexpirationtime: process.env.accesstokenexpirationtime ?? '1h',
