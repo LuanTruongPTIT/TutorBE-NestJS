@@ -4,6 +4,8 @@ import { IAuthPassword } from '../interfaces/auth.interface';
 import { ConfigService } from '@nestjs/config';
 import { AuthRepository } from '../repository/auth.repository';
 import { HelperEncryptionService } from 'src/common/helper/services/helper.encryption.service';
+import { User } from 'src/common/databases/datasource/entities/user.entity';
+import { Auth } from 'src/common/databases/datasource/entities/auth.entity';
 
 @Injectable()
 export class AuthService {
@@ -25,13 +27,13 @@ export class AuthService {
       'auth.accesstoken.accesstokensecretKey',
     );
     this.refreshTokenSecretKey = this.configService.get<string>(
-      'auth.accesstoken.refreshtokensecretKey',
+      'auth.refreshtoken.refreshtokensecretKey',
     );
     (this.accessTokenExpirationTime = this.configService.get<number>(
       'auth.accesstoken.accesstokenexpirationtime',
     )),
       (this.refreshTokenExpirationTime = this.configService.get<number>(
-        'auth.accesstoken.refreshtokenexpirationtime',
+        'auth.refreshtoken.refreshtokenexpirationtime',
       ));
   }
   async createSalt(length: number): Promise<string> {
@@ -81,5 +83,21 @@ export class AuthService {
 
   decodeToken(token: string): Record<string, any> {
     return this.helperEncryptionService.jwtDecrypt(token);
+  }
+
+  async comparePassword(password: string, hash: string): Promise<boolean> {
+    return await this.helperHashService.bcryptCompare(password, hash);
+  }
+  async getUserByEmail(email: string) {
+    const response = await Auth.findOne({
+      where: { email },
+      relations: ['user', 'role'],
+    });
+    return response;
+  }
+
+  async getUserByEmailWithRelations(auth_id: number) {
+    const response = await User.findByEmailWithRelations(auth_id);
+    return response;
   }
 }

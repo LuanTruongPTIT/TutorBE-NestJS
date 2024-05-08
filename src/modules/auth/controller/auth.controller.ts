@@ -5,6 +5,7 @@ import { UserService } from 'src/modules/user/services/user.service';
 import datasource from 'src/common/databases/datasource';
 import { User } from 'src/common/databases/datasource/entities/user.entity';
 import { DebuggerService } from 'src/common/debugger/services/debugger.service';
+import { UserLoginDto } from '../dto/sign-in.dto';
 
 @Controller()
 export class AuthController {
@@ -15,11 +16,49 @@ export class AuthController {
   ) {}
 
   @Post('/signIn')
-  async signIn(@Body() data: any) {
-    return {
-      accesstoken:
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoyLCJpYXQiOjE3MTE5MzM2NDAsImV4cCI6MTcxMTkzNzI0MH0.pawKaANAT7SJMQwrvg4wLsZW8Su8sLv1kTMFzBiqTlo',
+  async signIn(@Body() data: UserLoginDto, @Res() res) {
+    this.debugService.info(
+      `authcontroller, Log: signIn, data: ${JSON.stringify(data)}`,
+    );
+    const { email, password } = data;
+    const auth = await this.authService.getUserByEmail(email);
+    if (!auth) {
+      return res
+        .status(400)
+        .json({ status: 400, message: 'User is not existed' });
+    }
+    const isMatch = await this.authService.comparePassword(
+      password,
+      auth.password,
+    );
+    if (!isMatch) {
+      return res
+        .status(400)
+        .json({ status: 400, message: 'Password is not correct' });
+    }
+    if (!auth.email_verify) {
+      return res
+        .status(400)
+        .json({ status: 400, message: 'Email is not verify' });
+    }
+    const payloadToken = {
+      id: auth.user.id,
+      role: auth.role[0].role_name,
     };
+    const accesstoken = await this.authService.createAccessToken(payloadToken);
+    const user = await this.authService.getUserByEmailWithRelations(auth.id);
+
+    const refreshtoken =
+      await this.authService.createRefreshToken(payloadToken);
+    console.log('user', user, 'role', auth.role[0].role_name);
+    return res.status(200).json({
+      user: auth.user,
+      role: auth.role[0].role_name,
+      accesstoken: accesstoken,
+      refreshtoken: refreshtoken,
+      expiresInRefreshToken: 2592000,
+      exipresInAccessToken: 3600,
+    });
   }
 
   @Post('/email-verification')

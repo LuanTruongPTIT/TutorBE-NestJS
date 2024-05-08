@@ -7,6 +7,8 @@ import { Auth } from 'src/common/databases/datasource/entities/auth.entity';
 import { AuthRepository } from '../../auth/repository/auth.repository';
 import { EmailService } from 'src/common/email/email.service';
 import { AuthService } from 'src/modules/auth/services/auth.service';
+import { RoleService } from 'src/modules/role/service/role.service';
+import { Role } from 'src/common/databases/datasource/entities/role.entity';
 
 @Injectable()
 export class UserService implements IUserService {
@@ -15,10 +17,13 @@ export class UserService implements IUserService {
     private readonly userRepository: UserRepository,
     private readonly emailService: EmailService,
     private readonly authService: AuthService,
+    private readonly roleService: RoleService,
   ) {}
   async createUser(data: UserCreateSerialization): Promise<any> {
-    const { email, password, name, role_id, email_verify } = data;
-
+    const { email, password, name, email_verify } = data;
+    const role = (await this.roleService.findRoleByName({
+      role_name: 'user',
+    })) as Role;
     const user = new User();
 
     const auth = new Auth();
@@ -27,7 +32,8 @@ export class UserService implements IUserService {
     auth.email_verify = email_verify;
     user.fullName = name;
     user.auth = auth;
-    user.role = [role_id];
+    user.email = email;
+    auth.role = [role];
     const result = await this.userRepository.create(user);
 
     // await this.userRepository.save(user);
@@ -39,5 +45,9 @@ export class UserService implements IUserService {
   async findUserById(id: number) {
     const response = await this.userRepository.findById(id);
     return response;
+  }
+
+  async comparePassword(password: string, hash: string) {
+    return await this.authService.comparePassword(password, hash);
   }
 }
