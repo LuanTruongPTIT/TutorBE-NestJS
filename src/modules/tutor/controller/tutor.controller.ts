@@ -20,9 +20,6 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { TutorUpdateStatusDto } from '../dto/tutor.update-status.dto';
 
 @Controller()
-/**
- * Controller class for handling tutor-related operations.
- */
 export class TutorController {
   constructor(
     private readonly tutorService: TutorService,
@@ -105,9 +102,6 @@ export class TutorController {
       id,
       status,
     );
-    // return res
-    //   .status(200)
-    //   .json({ status: 200, message: 'Update status success' });
     return res.status(200).json(result);
   }
 
@@ -118,7 +112,7 @@ export class TutorController {
     return res.status(200).json(data);
   }
 
-  // @AuthJwtAdminAccessProtected()
+  @AuthJwtAdminAccessProtected()
   @Get('/get-all-application-interview')
   async getApplicationTutorInterview(@Res() res: Response) {
     const data = await this.tutorService.getAllAplicationTutorInterview();

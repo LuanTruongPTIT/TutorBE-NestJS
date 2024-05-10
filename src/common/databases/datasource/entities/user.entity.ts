@@ -1,8 +1,9 @@
 import { AbstractEntityIntId } from 'src/common/databases/abstracts/abstract.entity';
-import { Entity, Column, OneToOne, JoinColumn } from 'typeorm';
+import { Entity, Column, OneToOne, JoinColumn, OneToMany } from 'typeorm';
 import { Auth } from './auth.entity';
 
 import { ReigsterTutorEntity } from './user-advance.entity';
+import { Courses } from './courses.entity';
 
 @Entity({ name: 'user', schema: 'public' })
 export class User extends AbstractEntityIntId<User> {
@@ -34,6 +35,9 @@ export class User extends AbstractEntityIntId<User> {
   url_cert: JSON;
   @OneToOne(() => ReigsterTutorEntity, (registerTutor) => registerTutor.user)
   registerTutor: ReigsterTutorEntity;
+
+  @OneToMany(() => Courses, (courses) => courses.user)
+  courses: Courses;
   static async findByEmailWithRelations(auth_id: number) {
     return this.findOne({
       where: { auth: { id: auth_id } },
