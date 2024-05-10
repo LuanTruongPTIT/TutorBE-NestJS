@@ -18,8 +18,9 @@ async function bootstrap() {
   app.useWebSocketAdapter(redisIoAdapter);
   app.useGlobalPipes(new ValidationPipe());
   app.enableCors({
-    origin: 'http://localhost:3000',
+    origin: ['http://localhost:3000', 'http://localhost:3001'],
   });
+
   // app.useLogger(app.get(WINSTON_MODULE_NEST_PROVIDER));
   const port = process.env.PORT || 8001;
   await app.listen(port);

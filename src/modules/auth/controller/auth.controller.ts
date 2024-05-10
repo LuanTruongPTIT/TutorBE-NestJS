@@ -87,4 +87,49 @@ export class AuthController {
       .status(200)
       .json({ success: true, message: 'Verify Email is success' });
   }
+
+  @Post('/sign-in/tutor')
+  async signInTutorial(@Body() data: UserLoginDto, @Res() res) {
+    console.log('data', data);
+    const { email, password } = data;
+    const auth = await this.authService.getUserByEmail(email);
+
+    if (!auth) {
+      return res.status(422).json({
+        status: 400,
+        message: 'Your account is not part of our organization',
+      });
+    }
+    const isMatch = await this.authService.comparePassword(
+      password,
+      auth.password,
+    );
+    if (!isMatch) {
+      return res
+        .status(422)
+        .json({ status: 400, message: 'Password is not correct' });
+    }
+    if (!auth.email_verify) {
+      return res
+        .status(422)
+        .json({ status: 400, message: 'Email is not verify' });
+    }
+    const payloadToken = {
+      id: auth.user.id,
+      role: auth.role[0].role_name,
+    };
+    const accesstoken = await this.authService.createAccessToken(payloadToken);
+    const user = await this.authService.getUserByEmailWithRelations(auth.id);
+
+    const refreshtoken =
+      await this.authService.createRefreshToken(payloadToken);
+    return res.status(200).json({
+      user: auth.user,
+      role: auth.role[0].role_name,
+      accesstoken: accesstoken,
+      refreshtoken: refreshtoken,
+      expiresInRefreshToken: 2592000,
+      exipresInAccessToken: 3600,
+    });
+  }
 }
