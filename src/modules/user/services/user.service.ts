@@ -25,7 +25,8 @@ export class UserService implements IUserService {
       role_name: 'user',
     })) as Role;
     const user = new User();
-
+    if (!role) {
+    }
     const auth = new Auth();
     auth.email = email;
     auth.password = password;

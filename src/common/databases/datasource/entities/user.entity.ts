@@ -3,7 +3,7 @@ import { Entity, Column, OneToOne, JoinColumn, OneToMany } from 'typeorm';
 import { Auth } from './auth.entity';
 
 import { ReigsterTutorEntity } from './user-advance.entity';
-import { Courses } from './courses.entity';
+import { Course } from './course.entity';
 
 @Entity({ name: 'user', schema: 'public' })
 export class User extends AbstractEntityIntId<User> {
@@ -36,13 +36,17 @@ export class User extends AbstractEntityIntId<User> {
   @OneToOne(() => ReigsterTutorEntity, (registerTutor) => registerTutor.user)
   registerTutor: ReigsterTutorEntity;
 
-  @OneToMany(() => Courses, (courses) => courses.user)
-  courses: Courses;
+  @OneToMany(() => Course, (course) => course.user)
+  courses: Course[];
   static async findByEmailWithRelations(auth_id: number) {
     return this.findOne({
       where: { auth: { id: auth_id } },
       relations: ['auth'],
       // select: ['fullName', 'auth'],
     });
+  }
+
+  static async findUserById(id: number) {
+    return this.findOne({ where: { id } });
   }
 }
