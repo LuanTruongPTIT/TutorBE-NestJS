@@ -41,8 +41,8 @@ export class TutorController {
     console.log(checkUserRegister);
     if (checkUserRegister) {
       return res
-        .status(400)
-        .json({ message: 'You already registered tutor', status: 400 });
+        .status(422)
+        .json({ message: 'You already registered tutor', status: 422 });
     }
 
     await this.tutorService.becomeTutor(data, req['user'].id);

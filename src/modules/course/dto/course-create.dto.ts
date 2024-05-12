@@ -5,5 +5,6 @@ export class CourseCreateDto {
   @MaxLength(100)
   @MinLength(2)
   @IsString()
-  name: string;
+  title: string;
 }
+export class ChapterCreateDto extends CourseCreateDto {}

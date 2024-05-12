@@ -3,7 +3,11 @@
  * This is only a minimal backend to get started.
  */
 
-import { Logger, ValidationPipe } from '@nestjs/common';
+import {
+  Logger,
+  UnprocessableEntityException,
+  ValidationPipe,
+} from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { RedisIoAdapter } from './common/adapters/redis-io.adapter';
@@ -16,7 +20,23 @@ async function bootstrap() {
   const redisIoAdapter = new RedisIoAdapter(app);
   await redisIoAdapter.connectToRedis();
   app.useWebSocketAdapter(redisIoAdapter);
-  app.useGlobalPipes(new ValidationPipe());
+  app.useGlobalPipes(
+    new ValidationPipe({
+      exceptionFactory: (errors) => {
+        return new UnprocessableEntityException({
+          status: 422,
+          message: 'Entity Error Payload',
+          errors: errors.reduce(
+            (acc, e) => ({
+              ...acc,
+              [e.property]: Object.values(e.constraints),
+            }),
+            {},
+          ),
+        });
+      },
+    }),
+  );
   app.enableCors({
     origin: ['http://localhost:3000', 'http://localhost:3001'],
   });
