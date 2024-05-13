@@ -1,5 +1,5 @@
 import { Entity, Column, ManyToMany } from 'typeorm';
-import { AbstractEntityIntId } from '../../abstracts/abstract.entity';
+import { AbstractEntityIntId } from 'src/common/databases/abstracts/abstract.entity';
 
 import { Auth } from './auth.entity';
 

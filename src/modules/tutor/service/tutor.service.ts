@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { TutorRepository } from '../repository/tutor.repository';
 import { UserRepository } from 'src/modules/user/repository/user.repository';
-import { BecomeTutorDto } from '../dto/register-tutor.dto';
+import { BecomeTutorDto } from '../dto/tutor.register-tutor.dto';
 import {
   ApplicationStatus,
   ReigsterTutorEntity,

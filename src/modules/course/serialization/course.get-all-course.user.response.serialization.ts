@@ -13,6 +13,7 @@ export class ChapterSerialization {
 export class GetAllCourseUserResponseSerialization {
   @Expose()
   id: number;
+
   @Expose()
   title: string;
 

@@ -23,7 +23,7 @@ export class RolePayloadTypeGuard implements CanActivate {
     if (!requiredFor || role === ENUM_ROLE_TYPE.SUPER_ADMIN) {
       return true;
     }
-    const hasFor: boolean = requiredFor.includes(role.toUpperCase());
+    const hasFor: boolean = requiredFor.includes(role);
     if (!hasFor) {
       throw new ForbiddenException({
         statusCode: ENUM_ROLE_STATUS_CODE_ERROR.ROLE_PAYLOAD_TYPE_INVALID_ERROR,

@@ -8,7 +8,7 @@ import {
   Req,
   Res,
 } from '@nestjs/common';
-import { BecomeTutorDto } from '../dto/register-tutor.dto';
+import { BecomeTutorDto } from '../dto/tutor.register-tutor.dto';
 import {
   AuthJwtAccessProtected,
   AuthJwtAdminAccessProtected,
@@ -18,6 +18,8 @@ import { TutorService } from '../service/tutor.service';
 import { Response } from 'express';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { TutorUpdateStatusDto } from '../dto/tutor.update-status.dto';
+import { AuthJwtAdminAndTutorAccessProtected } from '../decorators/tutor.decorator';
+import { TutorCreateSutdentDto } from '../dto/tutor.create-student-advance';
 
 @Controller()
 export class TutorController {
@@ -117,5 +119,15 @@ export class TutorController {
   async getApplicationTutorInterview(@Res() res: Response) {
     const data = await this.tutorService.getAllAplicationTutorInterview();
     return res.status(200).json(data);
+  }
+  @AuthJwtAdminAndTutorAccessProtected()
+  @Post('/create-student')
+  async CreateStudent(
+    @Body() data: TutorCreateSutdentDto,
+    @Res() res: Response,
+    @Req() req: Request,
+  ) {
+    console.log('create student', data);
+    res.status(200).json({ message: 'Create student success' });
   }
 }

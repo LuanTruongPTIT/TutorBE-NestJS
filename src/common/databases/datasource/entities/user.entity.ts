@@ -4,6 +4,7 @@ import { Auth } from './auth.entity';
 
 import { ReigsterTutorEntity } from './user-advance.entity';
 import { Course } from './course.entity';
+import { StudentAdvance } from './student-advance.entity';
 
 @Entity({ name: 'user', schema: 'public' })
 export class User extends AbstractEntityIntId<User> {
@@ -24,6 +25,8 @@ export class User extends AbstractEntityIntId<User> {
   @Column({ type: 'varchar', length: 45, nullable: true })
   phoneNumber: string;
 
+  @OneToOne(() => StudentAdvance, (studentAdvance) => studentAdvance.user)
+  studentAdvance: StudentAdvance;
   @OneToOne(() => Auth, {
     cascade: true,
   })
