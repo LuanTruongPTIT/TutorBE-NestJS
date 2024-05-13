@@ -4,8 +4,12 @@ import { Auth } from './auth.entity';
 
 import { ReigsterTutorEntity } from './user-advance.entity';
 import { Course } from './course.entity';
-import { StudentAdvance } from './student-advance.entity';
-
+import { StudentAdvanceEntity } from './student-advance.entity';
+import { TutorAdvanceEntity } from './tutor-advance.entity';
+export enum Gender {
+  MALE = 'MALE',
+  FEMALE = 'FEMALE',
+}
 @Entity({ name: 'user', schema: 'public' })
 export class User extends AbstractEntityIntId<User> {
   @Column({ type: 'varchar', length: 45, nullable: true })
@@ -20,13 +24,19 @@ export class User extends AbstractEntityIntId<User> {
   @Column({ type: 'varchar', length: 45, nullable: true })
   email: string;
   @Column({ type: 'varchar', length: 45, nullable: true })
-  country_of_origin: string;
+  country: string;
 
   @Column({ type: 'varchar', length: 45, nullable: true })
   phoneNumber: string;
 
-  @OneToOne(() => StudentAdvance, (studentAdvance) => studentAdvance.user)
-  studentAdvance: StudentAdvance;
+  @Column({ type: 'enum', enum: Gender, nullable: true })
+  gender: Gender;
+
+  @Column({ type: 'varchar', length: 45, nullable: true })
+  address: string;
+
+  @OneToOne(() => StudentAdvanceEntity, (studentAdvance) => studentAdvance.user)
+  studentAdvance: StudentAdvanceEntity;
   @OneToOne(() => Auth, {
     cascade: true,
   })
@@ -38,6 +48,9 @@ export class User extends AbstractEntityIntId<User> {
   url_cert: JSON;
   @OneToOne(() => ReigsterTutorEntity, (registerTutor) => registerTutor.user)
   registerTutor: ReigsterTutorEntity;
+
+  @OneToOne(() => TutorAdvanceEntity, (tutor_advance) => tutor_advance.user)
+  tutor_advance: TutorAdvanceEntity;
 
   @OneToMany(() => Course, (course) => course.user)
   courses: Course[];
@@ -51,5 +64,8 @@ export class User extends AbstractEntityIntId<User> {
 
   static async findUserById(id: number) {
     return this.findOne({ where: { id } });
+  }
+  static async findUserByEmail(email: string) {
+    return this.findOne({ where: { email } });
   }
 }

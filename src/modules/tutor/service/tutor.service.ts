@@ -1,3 +1,4 @@
+import { StudentAdvanceEntity } from 'src/common/databases/datasource/entities/student-advance.entity';
 import { Injectable } from '@nestjs/common';
 import { TutorRepository } from '../repository/tutor.repository';
 import { UserRepository } from 'src/modules/user/repository/user.repository';
@@ -13,6 +14,8 @@ import {
   TutorApplicationSerialization,
 } from '../serialization/tutor.get-application.serialization';
 import { TutorGetApplicationDetailSerialization } from '../serialization/tutor.get-application-detail.serialization';
+import { User } from 'src/common/databases/datasource/entities/user.entity';
+import { TutorCreateSutdentDto } from '../dto/tutor.create-student-advance';
 
 @Injectable()
 export class TutorService {
@@ -101,5 +104,24 @@ export class TutorService {
     const datas = await ReigsterTutorEntity.getAllAplicationTutorInterview();
     console.log(datas);
     return TutorApplicationInterview.fromPlain(datas);
+  }
+
+  async CreateStudent(data: TutorCreateSutdentDto) {
+    const { email } = data;
+    const checkStudent = await User.findUserByEmail(email);
+    if (checkStudent) {
+      throw new Error('Student is already exist');
+    }
+    if (!checkStudent.auth.email_verify) {
+      throw new Error('Account Student is not verify');
+    }
+    const studentAdvance = new StudentAdvanceEntity();
+    studentAdvance.lastName = data.lastName;
+    studentAdvance.firstName = data.firstName;
+    studentAdvance.country = data.country;
+    studentAdvance.address = data.address;
+    studentAdvance.phoneNumber = data.phone;
+    studentAdvance.gender = data.gender;
+    studentAdvance.user = checkStudent;
   }
 }

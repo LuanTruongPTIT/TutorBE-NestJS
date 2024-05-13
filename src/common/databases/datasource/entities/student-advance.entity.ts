@@ -1,6 +1,7 @@
-import { Column, Entity, JoinColumn, OneToOne } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToMany, OneToOne } from 'typeorm';
 import { AbstractEntityIntId } from 'src/common/databases/abstracts/abstract.entity';
 import { User } from './user.entity';
+import { TutorAdvanceEntity } from './tutor-advance.entity';
 
 export enum Level {
   PRIMARY = 'PRIMARY',
@@ -12,10 +13,34 @@ export enum Level {
   POSTGRADUATE = 'POSTGRADUATE',
   DOCTORATE = 'DOCTORATE',
 }
+export enum Gender {
+  MALE = 'MALE',
+  FEMALE = 'FEMALE',
+}
 @Entity({ name: 'student_advance', schema: 'public' })
-export class StudentAdvance extends AbstractEntityIntId<StudentAdvance> {
-  @Column({ type: 'date', nullable: false })
-  addission_date: Date;
+export class StudentAdvanceEntity extends AbstractEntityIntId<StudentAdvanceEntity> {
+  @Column({ type: 'varchar', length: 45, nullable: true })
+  firstName: string;
+
+  @Column({ type: 'varchar', length: 45, nullable: true })
+  lastName: string;
+
+  @Column({ type: 'varchar', name: 'full_name', length: 100, nullable: true })
+  fullName: string;
+  @Column({ type: 'varchar', length: 45, nullable: true })
+  email: string;
+
+  @Column({ type: 'varchar', length: 45, nullable: true })
+  country: string;
+
+  @Column({ type: 'varchar', length: 45, nullable: true })
+  phoneNumber: string;
+
+  @Column({ type: 'enum', enum: Gender, nullable: true })
+  gender: Gender;
+
+  @Column({ type: 'varchar', length: 45, nullable: true })
+  address: string;
 
   @Column({ type: 'enum', enum: Level, nullable: false })
   Level: Level;
@@ -46,4 +71,10 @@ export class StudentAdvance extends AbstractEntityIntId<StudentAdvance> {
   })
   @JoinColumn({ name: 'student_id' })
   user: User;
+
+  @ManyToMany(
+    () => TutorAdvanceEntity,
+    (tutor_advance) => tutor_advance.student_advance,
+  )
+  tutor_advance: TutorAdvanceEntity[];
 }

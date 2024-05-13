@@ -6,6 +6,7 @@ import {
   Matches,
   IsNotEmpty,
 } from 'class-validator';
+import { Gender } from 'src/common/databases/datasource/entities/user.entity';
 
 export class TutorCreateSutdentDto {
   @IsNotEmpty()
@@ -48,7 +49,7 @@ export class TutorCreateSutdentDto {
 
   @IsNotEmpty()
   @IsString()
-  gender: string;
+  gender: Gender;
 
   @IsNotEmpty()
   @IsString()
