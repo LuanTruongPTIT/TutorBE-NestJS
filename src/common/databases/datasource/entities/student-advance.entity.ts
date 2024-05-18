@@ -1,7 +1,7 @@
 import { Column, Entity, JoinColumn, ManyToMany, OneToOne } from 'typeorm';
 import { AbstractEntityIntId } from 'src/common/databases/abstracts/abstract.entity';
 import { User } from './user.entity';
-import { TutorAdvanceEntity } from './tutor-advance.entity';
+import { ClassEntity } from './class.entity';
 
 export enum Level {
   PRIMARY = 'PRIMARY',
@@ -16,6 +16,12 @@ export enum Level {
 export enum Gender {
   MALE = 'MALE',
   FEMALE = 'FEMALE',
+}
+export enum status_student_enum {
+  ACTIVE = 'ACTIVE',
+  INACTIVE = 'INACTIVE',
+  SUSPENDED = 'SUSPENDED',
+  DELETED = 'DELETED',
 }
 @Entity({ name: 'student_advance', schema: 'public' })
 export class StudentAdvanceEntity extends AbstractEntityIntId<StudentAdvanceEntity> {
@@ -43,7 +49,7 @@ export class StudentAdvanceEntity extends AbstractEntityIntId<StudentAdvanceEnti
   address: string;
 
   @Column({ type: 'enum', enum: Level, nullable: false })
-  Level: Level;
+  level: Level;
 
   @Column({ type: 'varchar', length: 100, nullable: false })
   school: string;
@@ -53,6 +59,14 @@ export class StudentAdvanceEntity extends AbstractEntityIntId<StudentAdvanceEnti
 
   @Column({ type: 'varchar', length: 100, nullable: true })
   parent_name: string;
+
+  @Column({
+    type: 'enum',
+    enum: status_student_enum,
+    nullable: false,
+    default: status_student_enum.ACTIVE,
+  })
+  status: status_student_enum;
 
   @Column({ type: 'varchar', length: 100, nullable: true })
   parent_phone: string;
@@ -66,15 +80,41 @@ export class StudentAdvanceEntity extends AbstractEntityIntId<StudentAdvanceEnti
   @Column({ type: 'varchar', length: 100, nullable: true })
   parent_country: string;
 
-  @OneToOne(() => User, (user) => user.studentAdvance, {
+  @OneToOne(() => User, (user) => user.student_advance, {
     cascade: true,
   })
   @JoinColumn({ name: 'student_id' })
   user: User;
 
-  @ManyToMany(
-    () => TutorAdvanceEntity,
-    (tutor_advance) => tutor_advance.student_advance,
-  )
-  tutor_advance: TutorAdvanceEntity[];
+  @Column({ type: 'varchar', length: 200, nullable: true })
+  imageUrl: string;
+
+  @ManyToMany(() => ClassEntity, (classEntity) => classEntity.student, {
+    cascade: true,
+  })
+  Class: ClassEntity[];
+  static async findStudentByEmai(email: string) {
+    const result = await this.createQueryBuilder('student_advance')
+      .where('student_advance.email = :email', { email })
+      .select([
+        'student_advance.id',
+        'student_advance.fullName',
+        'student_advance.email',
+        'student_advance.imageUrl',
+      ])
+      .getOne();
+    return result;
+  }
+  static async findStudentByStudentId(id: number) {
+    return this.findOne({
+      where: { user: { id: id } },
+    });
+  }
+
+  static async updateStudentAdvanceById(
+    id: number,
+    data: Partial<StudentAdvanceEntity>,
+  ) {
+    return this.update({ id }, data);
+  }
 }

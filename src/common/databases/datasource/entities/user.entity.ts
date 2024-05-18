@@ -1,11 +1,21 @@
 import { AbstractEntityIntId } from 'src/common/databases/abstracts/abstract.entity';
-import { Entity, Column, OneToOne, JoinColumn, OneToMany } from 'typeorm';
+import {
+  Entity,
+  Column,
+  OneToOne,
+  JoinColumn,
+  OneToMany,
+  ManyToMany,
+} from 'typeorm';
 import { Auth } from './auth.entity';
 
 import { ReigsterTutorEntity } from './user-advance.entity';
 import { Course } from './course.entity';
 import { StudentAdvanceEntity } from './student-advance.entity';
 import { TutorAdvanceEntity } from './tutor-advance.entity';
+import { ClassEntity } from './class.entity';
+import { ScheduleEntity } from './schedule.entity';
+
 export enum Gender {
   MALE = 'MALE',
   FEMALE = 'FEMALE',
@@ -36,14 +46,14 @@ export class User extends AbstractEntityIntId<User> {
   address: string;
 
   @OneToOne(() => StudentAdvanceEntity, (studentAdvance) => studentAdvance.user)
-  studentAdvance: StudentAdvanceEntity;
+  student_advance: StudentAdvanceEntity;
+
   @OneToOne(() => Auth, {
     cascade: true,
   })
   @JoinColumn()
   auth: Auth;
 
-  // status:
   @Column({ type: 'json', nullable: true })
   url_cert: JSON;
   @OneToOne(() => ReigsterTutorEntity, (registerTutor) => registerTutor.user)
@@ -51,21 +61,42 @@ export class User extends AbstractEntityIntId<User> {
 
   @OneToOne(() => TutorAdvanceEntity, (tutor_advance) => tutor_advance.user)
   tutor_advance: TutorAdvanceEntity;
-
+  @OneToMany(() => ClassEntity, (room) => room.tutor)
+  class_tutor: ClassEntity[];
   @OneToMany(() => Course, (course) => course.user)
   courses: Course[];
   static async findByEmailWithRelations(auth_id: number) {
     return this.findOne({
       where: { auth: { id: auth_id } },
       relations: ['auth'],
-      // select: ['fullName', 'auth'],
     });
   }
-
+  @ManyToMany(() => ScheduleEntity, (schedule) => schedule.students)
+  schedules: ScheduleEntity[];
   static async findUserById(id: number) {
     return this.findOne({ where: { id } });
   }
   static async findUserByEmail(email: string) {
     return this.findOne({ where: { email } });
+  }
+  static async findStudentdentByTutorId(tutor_id: number) {
+    return this.createQueryBuilder('user')
+      .select([
+        'user.email', // Trường từ bảng user
+        'studentAdvance.school', // Trường cụ thể từ bảng student_advance
+        // 'enroll.fieldName', // Thêm các trường từ bảng enroll nếu cần
+        'studentAdvance.fullName',
+        'studentAdvance.gender',
+        'studentAdvance.country',
+        'studentAdvance.address',
+        'studentAdvance.phoneNumber',
+        'studentAdvance.imageUrl',
+        'studentAdvance.level',
+        'studentAdvance.status',
+        'studentAdvance.dateOfBirth',
+      ])
+      .innerJoin('user.student_advance', 'studentAdvance')
+      .where('user.id = :tutor_id', { tutor_id })
+      .getMany();
   }
 }

@@ -1,7 +1,6 @@
 import { AbstractEntityIntId } from 'src/common/databases/abstracts/abstract.entity';
-import { Column, Entity, JoinTable, ManyToMany, OneToOne } from 'typeorm';
+import { Column, Entity, JoinColumn, OneToOne } from 'typeorm';
 import { User } from './user.entity';
-import { StudentAdvanceEntity } from './student-advance.entity';
 
 @Entity({ name: 'tutor_advance', schema: 'public' })
 export class TutorAdvanceEntity extends AbstractEntityIntId<TutorAdvanceEntity> {
@@ -39,12 +38,12 @@ export class TutorAdvanceEntity extends AbstractEntityIntId<TutorAdvanceEntity> 
   imageCert: JSON;
 
   @OneToOne(() => User, (user) => user.tutor_advance)
+  @JoinColumn({ name: 'tutor_id' })
   user: User;
 
-  @ManyToMany(
-    () => StudentAdvanceEntity,
-    (student_advance) => student_advance.tutor_advance,
-  )
-  @JoinTable()
-  student_advance: StudentAdvanceEntity[];
+  static async findTutorByTutorId(id: number) {
+    return this.findOne({
+      where: { user: { id: id } },
+    });
+  }
 }

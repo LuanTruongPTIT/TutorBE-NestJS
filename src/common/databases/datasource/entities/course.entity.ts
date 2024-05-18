@@ -2,6 +2,9 @@ import { AbstractEntityIntId } from 'src/common/databases/abstracts/abstract.ent
 import { Column, Entity, ManyToOne, OneToMany } from 'typeorm';
 import { User } from './user.entity';
 import { Chapter } from './chapter.entity';
+import { ClassEntity } from './class.entity';
+import { ScheduleEntity } from './schedule.entity';
+import { LessonEntity } from './lesson.entity';
 
 @Entity({ name: 'course', schema: 'public' })
 export class Course extends AbstractEntityIntId<Course> {
@@ -27,6 +30,10 @@ export class Course extends AbstractEntityIntId<Course> {
 
   @OneToMany(() => Chapter, (chapter) => chapter.course)
   chapters: Chapter[];
+  @OneToMany(() => ScheduleEntity, (schedule) => schedule.Course)
+  schedules: ScheduleEntity[];
+  @OneToMany(() => ClassEntity, (room) => room.course)
+  Class: ClassEntity[];
 
   static async findCourseById(id: number) {
     return this.findOne({
@@ -49,6 +56,20 @@ export class Course extends AbstractEntityIntId<Course> {
     return this.find({
       where: { user: { id } },
       relations: ['chapters'],
+    });
+  }
+
+  static async findCourseByNameAndTutorId(title: string, id: number) {
+    return this.findOne({
+      where: { title, user: { id } },
+    });
+  }
+  static async findCourseByName(title: string, tutor_id: number) {
+    return this.findOne({
+      where: {
+        title,
+        user: { id: tutor_id },
+      },
     });
   }
 }

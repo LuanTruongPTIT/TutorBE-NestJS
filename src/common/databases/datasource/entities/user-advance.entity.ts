@@ -14,6 +14,7 @@ import { District } from './district.entity';
 import { User } from './user.entity';
 import { ImageEntity } from './image.entity';
 import { CertificationEntity } from './certification.entity';
+
 export enum DegreeType {
   COLLEGE = 'college',
   UNIVERSITY = 'university',

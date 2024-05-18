@@ -1,6 +1,8 @@
 import { AbstractEntityIntId } from 'src/common/databases/abstracts/abstract.entity';
-import { Column, Entity, ManyToOne } from 'typeorm';
+import { Column, Entity, ManyToOne, OneToMany } from 'typeorm';
 import { Course } from './course.entity';
+import { ScheduleEntity } from './schedule.entity';
+import { LessonEntity } from './lesson.entity';
 
 @Entity({ name: 'chapter', schema: 'public' })
 export class Chapter extends AbstractEntityIntId<Chapter> {
@@ -27,6 +29,11 @@ export class Chapter extends AbstractEntityIntId<Chapter> {
   })
   course: Course;
 
+  @OneToMany(() => ScheduleEntity, (schedule) => schedule.chapter)
+  schedules: ScheduleEntity[];
+
+  @OneToMany(() => LessonEntity, (lesson) => lesson.chapter)
+  lesson: LessonEntity[];
   static async findLastChapterByCourseId(courseId: number) {
     return this.createQueryBuilder('chapter')
       .where('chapter.course.id = :courseId', { courseId })
@@ -38,5 +45,40 @@ export class Chapter extends AbstractEntityIntId<Chapter> {
     return this.findOne({
       where: { id, course: { id: id_course } },
     });
+  }
+  static async findChapterNotCompleteByClassId(
+    class_id: number,
+    course_id: number,
+  ) {
+    return this.createQueryBuilder('chapter')
+      .innerJoinAndSelect('chapter.lesson', 'lesson')
+      .innerJoinAndSelect('lesson.Class', 'class')
+      .innerJoinAndSelect('class.course', 'course') // Giả sử mối quan hệ giữa Class và Course đã được thiết lập
+      .where('class.id = :class_id', { class_id })
+      .andWhere('course.id = :course_id', { course_id }) // Thêm điều kiện lọc theo courseId
+      .andWhere('lesson.complete = :complete', { complete: false })
+      .getMany();
+  }
+  static async findChapterByCourseId(course_id: number, class_id: number) {
+    // return this.createQueryBuilder('chapter')
+    //   .innerJoinAndSelect('chapter.course', 'course')
+    //   .innerJoinAndSelect('course.Class', 'class')
+    //   .where('course.id = :course_id', { course_id })
+    //   .andWhere('class.id = :class_id', { class_id })
+    //   .getMany();
+    // return this.createQueryBuilder('chapter')
+    //   .innerJoinAndSelect('chapter.course', 'course')
+    //   .innerJoinAndSelect('course.Class', 'class')
+    //   .where('course.id = :course_id', { course_id })
+    //   .andWhere('class.id = :class_id', { class_id })
+    //   .select(['chapter.id', 'course', 'class'])
+    //   .getMany();
+    const chapters = await this.createQueryBuilder('chapter')
+      .innerJoinAndSelect('chapter.course', 'course')
+      .innerJoinAndSelect('course.Class', 'class')
+      .where('course.id = :course_id', { course_id })
+      .andWhere('class.id = :class_id', { class_id })
+      .getMany();
+    return chapters;
   }
 }

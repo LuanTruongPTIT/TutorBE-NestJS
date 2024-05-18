@@ -58,7 +58,7 @@ export class CourseService {
     chapter.course = user_course;
 
     const position = await Chapter.findLastChapterByCourseId(id_course);
-    chapter.position = position.position + 1;
+    chapter.position = position?.position ? position.position + 1 : 1;
     await Chapter.save(chapter);
     return this.getCourseById(user_id, id_course);
   }

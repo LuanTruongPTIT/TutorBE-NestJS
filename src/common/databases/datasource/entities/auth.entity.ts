@@ -25,4 +25,22 @@ export class Auth extends AbstractEntityIntId<Auth> {
   })
   @JoinTable()
   role: Role[];
+
+  static async findByEmailAndRole(email: string, role: string) {
+    return this.createQueryBuilder('auth')
+      .select([
+        'auth.email',
+        'user.id',
+        'student_advance.fullName',
+        'student_advance.imageUrl',
+      ])
+      .where('auth.email = :email', { email })
+      .innerJoin('auth.role', 'role')
+      .andWhere('role.role_name = :role', { role: role })
+      .innerJoin('auth.user', 'user')
+      .andWhere('user.auth = auth.id')
+      .innerJoin('user.student_advance', 'student_advance')
+      .andWhere('student_advance.user = user.id')
+      .getOne();
+  }
 }
