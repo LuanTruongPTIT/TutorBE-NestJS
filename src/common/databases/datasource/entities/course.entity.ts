@@ -3,8 +3,6 @@ import { Column, Entity, ManyToOne, OneToMany } from 'typeorm';
 import { User } from './user.entity';
 import { Chapter } from './chapter.entity';
 import { ClassEntity } from './class.entity';
-import { ScheduleEntity } from './schedule.entity';
-import { LessonEntity } from './lesson.entity';
 
 @Entity({ name: 'course', schema: 'public' })
 export class Course extends AbstractEntityIntId<Course> {
@@ -30,8 +28,7 @@ export class Course extends AbstractEntityIntId<Course> {
 
   @OneToMany(() => Chapter, (chapter) => chapter.course)
   chapters: Chapter[];
-  @OneToMany(() => ScheduleEntity, (schedule) => schedule.Course)
-  schedules: ScheduleEntity[];
+
   @OneToMany(() => ClassEntity, (room) => room.course)
   Class: ClassEntity[];
 

@@ -1,6 +1,5 @@
 import { Entity, Column, ManyToMany } from 'typeorm';
 import { AbstractEntityIntId } from 'src/common/databases/abstracts/abstract.entity';
-
 import { Auth } from './auth.entity';
 
 @Entity({ name: 'role', schema: 'public' })

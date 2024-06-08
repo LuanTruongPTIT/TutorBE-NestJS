@@ -29,7 +29,7 @@ export class RoomController {
     });
   }
   // @AuthJwtAdminAndTutorAccessProtected()
-  @Get('/get-all-chapter-not-complete-by-class/:classId/:course_id')
+  @Get('/get-all-chapter-not-complete-by-class/:classId')
   async GetAllChapterNotCompleteByClassId(
     @Param('classId') classId: number,
     @Param('course_id') course_id: number,
@@ -39,7 +39,6 @@ export class RoomController {
     // const user_id = req['user'].id;
     const data = await this.roomService.GetAllChapterNotCompleteByClassId(
       Number(classId),
-      Number(course_id),
     );
     if (!data) {
       return res

@@ -5,6 +5,7 @@ import { ENUM_AUTH_STATUS_CODE_ERROR } from '../constants/auth.status-code.const
 @Injectable()
 export class AuthJwtAccessGuard extends AuthGuard('jwt') {
   handleRequest<TUser = any>(err: Error, user: TUser): TUser {
+    console.log(err);
     console.log('AuthJwtAccessGuard -> handleRequest -> user', user);
     if (err || !user) {
       console.log('AuthJwtAccessGuard -> handleRequest -> err', user);

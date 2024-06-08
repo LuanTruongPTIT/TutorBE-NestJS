@@ -9,20 +9,37 @@ export class RoomService {
     return await ClassEntity.findCourseByClassOfTutor(classId, tutorId);
   }
 
-  async GetAllChapterNotCompleteByClassId(classId: number, course_id: number) {
-    const chapterAll = await Chapter.findChapterByCourseId(course_id, classId);
+  async GetAllChapterNotCompleteByClassId(classId: number) {
+    const courseData = await ClassEntity.findCourseByClassId(classId);
+
+    const chapterAll = await Chapter.findChapterByCourseId(
+      courseData.course.id,
+    );
 
     const chapterComplete = await LessonEntity.findChapterCompleteByClassId(
       classId,
-      course_id,
+      courseData.course.id,
     );
-    console.log(chapterComplete);
-    // return Promise.all(
-    //   chapterAll.map((chapter) => {
-    //     console.log(chapter);
-    //     return chapterComplete.filter((item) => item.id === chapter.id);
-    //   }),
-    // );
-    return chapterAll;
+    // console.log(chapterAll);
+
+    const result = await Promise.all(
+      chapterAll.map((chapter) => {
+        const isComplete = chapterComplete.some(
+          (complete) => complete.chapter.id === chapter.id,
+        );
+        if (!isComplete) {
+          return chapter;
+        }
+      }),
+    );
+    const resultParse = result.filter((item) => {
+      console.log(item);
+      return item !== undefined;
+    });
+    const data = {
+      course: courseData.course,
+      chapters: resultParse,
+    };
+    return data;
   }
 }

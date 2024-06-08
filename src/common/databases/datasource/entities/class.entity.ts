@@ -12,6 +12,7 @@ import { Course } from './course.entity';
 import { User } from './user.entity';
 import { StudentAdvanceEntity } from './student-advance.entity';
 import { LessonEntity } from './lesson.entity';
+import { ScheduleEntity } from './schedule.entity';
 export enum EnrollStatusEnum {
   COMPLETED = 'COMPLETED',
   ONGOING = 'ONGOING',
@@ -49,6 +50,8 @@ export class ClassEntity extends AbstractEntityIntId<ClassEntity> {
 
   @OneToMany(() => LessonEntity, (lesson) => lesson.Class)
   lesson: LessonEntity[];
+  @OneToMany(() => ScheduleEntity, (schedule) => schedule.Class)
+  schedule: ScheduleEntity[];
   static async findAllStudentEnrollByCourseId(
     tutor_id: number,
     course_id: number,
@@ -111,14 +114,6 @@ export class ClassEntity extends AbstractEntityIntId<ClassEntity> {
     tutor_id: number,
     student_id: number,
   ) {
-    console.log(
-      'class_id',
-      class_id,
-      'tutor_id',
-      tutor_id,
-      'student_id',
-      student_id,
-    );
     return this.createQueryBuilder('class')
       .select(['class.id', 'class.name'])
       .innerJoin('class.student', 'student')
@@ -127,7 +122,7 @@ export class ClassEntity extends AbstractEntityIntId<ClassEntity> {
       .andWhere('student.id = :student_id', { student_id })
       .getOne();
   }
-  static async findClassById(class_name: string, tutor_id: number) {
+  static async findClassByName(class_name: string, tutor_id: number) {
     return this.findOne({
       where: { name: class_name, tutor: { id: tutor_id } },
     });
@@ -136,6 +131,15 @@ export class ClassEntity extends AbstractEntityIntId<ClassEntity> {
   static async findClassByNames(class_name: string) {
     return this.findOne({
       where: { name: class_name },
+    });
+  }
+  static async findCourseByClassId(class_id: number) {
+    return this.findOne({ where: { id: class_id }, relations: ['course'] });
+  }
+  static async findClassById(class_id: number, tutor_id: number) {
+    return this.findOne({
+      where: { id: class_id, tutor: { id: tutor_id } },
+      relations: ['student'],
     });
   }
 }

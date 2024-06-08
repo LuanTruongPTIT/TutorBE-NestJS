@@ -21,6 +21,22 @@ import { TutorGetAllStudentsOfTutorSerialization } from '../serialization/tutor.
 import { Auth } from 'src/common/databases/datasource/entities/auth.entity';
 import { SearchStudentResponse } from '../serialization/tutor.search-student.response';
 import { StudentAdvanceEntity } from 'src/common/databases/datasource/entities/student-advance.entity';
+import { CreateScheduleDto } from '../dto/tutor.create-schedule';
+import { Chapter } from 'src/common/databases/datasource/entities/chapter.entity';
+import { LessonEntity } from 'src/common/databases/datasource/entities/lesson.entity';
+import {
+  ScheduleEntity,
+  scheduleStatus,
+} from 'src/common/databases/datasource/entities/schedule.entity';
+import { TutorGetAllScheduleSerialization } from '../serialization/tutor.get-all-schedule.serialization';
+import {
+  AttendanceEntity,
+  status_attendance,
+} from 'src/common/databases/datasource/entities/attendance.entity';
+import { TutorAttendanceStudentSerialization } from '../serialization/tutor.attendance-student.serialization';
+import { TutorMarkPresentDto } from '../dto/tutor.mark-present.dto';
+import { TutorAdvanceEntity } from 'src/common/databases/datasource/entities/tutor-advance.entity';
+import { TutorGetProfileSerialization } from '../serialization/tutor.get-profile.serialization';
 
 @Injectable()
 export class TutorService {
@@ -57,7 +73,6 @@ export class TutorService {
       const images = await ImageEntity.save(image);
       tutorRegis.image = [images];
     }
-
     tutorRegis.college = universityName;
     tutorRegis.degree = degree;
     tutorRegis.degree_type = degree_type;
@@ -156,7 +171,7 @@ export class TutorService {
     if (!checkStudentAdvance) {
       throw new Error('Profile of student is not found');
     }
-    const checkClass = await ClassEntity.findClassById(class_name, tutor_id);
+    const checkClass = await ClassEntity.findClassByName(class_name, tutor_id);
 
     if (isSelect) {
       if (!checkClass) {
@@ -231,5 +246,236 @@ export class TutorService {
   async GetAllClassByTutorId(tutor_id: number) {
     const data = await ClassEntity.findAllClassByTutor(tutor_id);
     return data;
+  }
+
+  async CreateSchedule(tutor_id: number, data: CreateScheduleDto) {
+    const { course, chapter, room, date_schedule, duration_time } = data;
+    const startDate = new Date(date_schedule);
+    const day = startDate.getUTCDate() + 1;
+    const month = startDate.getUTCMonth();
+    const year = startDate.getUTCFullYear();
+
+    const checkDate = new Date(year, month, day).toISOString().split('T')[0];
+
+    const checkSchedule = await ScheduleEntity.findAllScheduleByDate(
+      checkDate,
+      tutor_id,
+    );
+    console.log('checkSchedule', checkSchedule);
+    if (checkSchedule.length > 0) {
+      checkSchedule.forEach((item) => {
+        if (item.Class.id === room) {
+          throw new HttpException(
+            `Class ${item.Class.name} is scheduled for ${new Date(date_schedule).toISOString().split('T')[0]}!`,
+            400,
+          );
+        }
+      });
+    }
+    await Promise.all(
+      checkSchedule.map(async (item) => {
+        if (
+          startDate.getTime() >= item.start_date.getTime() &&
+          startDate.getTime() <= item.duration_time.getTime()
+        ) {
+          console.log(
+            startDate.getTime(),
+            item.start_date.getTime(),
+            item.duration_time.getTime(),
+          );
+          throw new HttpException(
+            'You have a schedule for this period of time',
+            400,
+          );
+        } else if (
+          startDate.getTime() <= item.start_date.getTime() &&
+          item.start_date.getTime() <= startDate.getTime()
+        ) {
+          throw new HttpException(
+            'You have a schedule for this period of time',
+            400,
+          );
+        }
+      }),
+    );
+    const chapterCreate = await Chapter.findChapterById(chapter, course);
+    const roomClass = await ClassEntity.findClassById(room, tutor_id);
+
+    const lesson = new LessonEntity();
+    const schedule = new ScheduleEntity();
+
+    lesson.chapter = chapterCreate;
+    lesson.Class = roomClass;
+    const lessonCreate = await LessonEntity.create(lesson).save();
+    schedule.lesson = lessonCreate;
+    schedule.Class = roomClass;
+    schedule.topic = data.topic;
+    schedule.description = data.description ? data.description : '';
+
+    const durationParts = duration_time.split(':');
+    const durationMinutes =
+      parseInt(durationParts[0]) * 60 + parseInt(durationParts[1]);
+    const endDate = new Date(startDate.getTime() + durationMinutes * 60000);
+    schedule.start_date = startDate;
+    schedule.duration_time = endDate;
+    console.log(startDate, endDate);
+    const dataSchedule = await ScheduleEntity.create(schedule).save();
+    const attendance = new AttendanceEntity();
+    attendance.schedule = dataSchedule;
+    await Promise.all(
+      roomClass.student.map(async (item) => {
+        attendance.student = item;
+        await AttendanceEntity.create(attendance).save();
+      }),
+    );
+    return true;
+  }
+
+  async GetAllSchedule(tutor_id: number) {
+    const data = await ScheduleEntity.findAllSchedule(tutor_id);
+
+    return TutorGetAllScheduleSerialization.fromPlainArray(data);
+  }
+
+  async GetDetailSchedule(schedule_id: number, tutor_id: number) {
+    const data = await ScheduleEntity.findScheduleById(schedule_id, tutor_id);
+    console.log(data);
+    return data;
+  }
+  async GetLessonByClassAndChapter(class_id: number, chapter_id: number) {
+    const findLesson = await LessonEntity.findLessonByChapterIdAndClassId(
+      chapter_id,
+      class_id,
+    );
+    return findLesson;
+  }
+
+  async UpdateStatusSchedule(schedule_id: number, data: scheduleStatus) {
+    const schedule = await ScheduleEntity.findOne({
+      where: { id: schedule_id },
+    });
+    if (!schedule) {
+      throw new HttpException('Schedule not found', 400);
+    }
+    const attendance = await AttendanceEntity.find({
+      where: { schedule: { id: schedule_id } },
+    });
+    if (data === scheduleStatus.CANCELED) {
+      Promise.all(
+        attendance.map(async (item) => {
+          await AttendanceEntity.update(
+            { id: item.id },
+            { status: status_attendance.CANCEL },
+          );
+        }),
+      );
+    }
+
+    await ScheduleEntity.update({ id: schedule_id }, { status: data });
+    return await ScheduleEntity.findOne({ where: { id: schedule_id } });
+  }
+
+  async GetAllScheduleByClass(
+    class_id: number,
+    tutor_id: number,
+    date: string,
+  ) {
+    console.log(typeof date);
+    const input = date;
+
+    const parts = input.split('/');
+    const month = parseInt(parts[0], 10);
+    const year = parseInt(parts[1], 10);
+
+    const firstDay = new Date(year, month - 1, 1);
+    const formattedFirstDay = `${firstDay.getFullYear()}-${(firstDay.getMonth() + 1).toString().padStart(2, '0')}-${firstDay.getDate().toString().padStart(2, '0')}`;
+
+    const lastDay = new Date(year, month, 0);
+    const formattedLastDay = `${lastDay.getFullYear()}-${(lastDay.getMonth() + 1).toString().padStart(2, '0')}-${lastDay.getDate().toString().padStart(2, '0')}`;
+
+    const data = await AttendanceEntity.findAllAttendanceOfClass(
+      class_id,
+      tutor_id,
+      formattedFirstDay,
+      formattedLastDay,
+    );
+
+    return TutorAttendanceStudentSerialization.fromPlainArray(data);
+  }
+
+  async ActionMarkPresentStudentBySchedule(
+    data: TutorMarkPresentDto,
+    tutor_id: number,
+  ) {
+    const { date, day, present, room_id, studentId } = data;
+    const parts = date.split('/');
+    const month = parts[0];
+    const year = parts[1]; // Năm
+    const dayFormat = day.padStart(2, '0');
+
+    const formattedDate = `${year}-${month}-${dayFormat}`;
+    const checkScheduleDay = await ScheduleEntity.findScheduleByStartDate(
+      formattedDate,
+      room_id,
+    );
+    console.log(checkScheduleDay);
+    if (!checkScheduleDay) {
+      throw new HttpException(
+        'This Student does not have any schedules during this time',
+        400,
+      );
+    }
+    console.log(checkScheduleDay.status);
+    if (
+      checkScheduleDay &&
+      checkScheduleDay.status !== 'In Progress' &&
+      checkScheduleDay.status !== 'Completed'
+    ) {
+      throw new HttpException(
+        'You cannot take attendance for students whose schedules have not yet been started or completed',
+        400,
+      );
+    }
+    // const attendance = new AttendanceEntity();
+    // attendance.day = Number(day);
+    // attendance.present = present;
+    // attendance.schedule = checkScheduleDay;
+    // attendance.student = await StudentAdvanceEntity.findOne({
+    //   where: { id: studentId },
+    // });
+    // await AttendanceEntity.create(attendance).save();
+    const checkAttendance = await AttendanceEntity.findOne({
+      where: {
+        schedule: { id: checkScheduleDay.id },
+        student: { id: studentId },
+      },
+    });
+    if (checkAttendance.status === status_attendance.CANCEL) {
+      throw new HttpException(
+        'You cannot mark attendance for students whose attendance has been canceled',
+        400,
+      );
+    }
+
+    if (checkAttendance) {
+      checkAttendance.present = present;
+      await checkAttendance.save();
+    } else {
+      const attendance = new AttendanceEntity();
+      attendance.day = Number(day);
+      attendance.present = present;
+      attendance.schedule = checkScheduleDay;
+      attendance.student = await StudentAdvanceEntity.findOne({
+        where: { id: studentId },
+      });
+      await AttendanceEntity.create(attendance).save();
+    }
+    return checkScheduleDay;
+  }
+
+  async GetProfileTutor(tutor_id: number) {
+    const data = await TutorAdvanceEntity.findTutorByTutorId(tutor_id);
+
+    return TutorGetProfileSerialization.fromPlain(data);
   }
 }

@@ -37,7 +37,7 @@ export class CourseController {
     return res.status(200).json({
       data: {
         message: 'Create course success',
-        id: 1,
+        id: result,
       },
       status: 200,
     });

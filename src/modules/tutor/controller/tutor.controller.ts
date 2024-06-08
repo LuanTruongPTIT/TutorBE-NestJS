@@ -18,10 +18,16 @@ import {
 import { TutorService } from '../service/tutor.service';
 import { Response } from 'express';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { TutorUpdateStatusDto } from '../dto/tutor.update-status.dto';
+import {
+  TutorUpdateStatusDto,
+  UpdateStatusScheduleDto,
+} from '../dto/tutor.update-status.dto';
 import { AuthJwtAdminAndTutorAccessProtected } from '../decorators/tutor.decorator';
 import { TutorCreateSutdentDto } from '../dto/tutor.create-student-advance';
 import { AddStudentDto } from '../dto/tutor.add-student';
+import { CreateScheduleDto } from '../dto/tutor.create-schedule';
+import { TutorAttendanceStudentDto } from '../dto/tutor.attendance-student';
+import { TutorMarkPresentDto } from '../dto/tutor.mark-present.dto';
 
 @Controller()
 export class TutorController {
@@ -237,6 +243,166 @@ export class TutorController {
       data: {
         message: 'Get all class by tutor success',
         class: data,
+      },
+      status: 200,
+    });
+  }
+
+  @AuthJwtAdminAndTutorAccessProtected()
+  @Post('/create-schedule')
+  async CreateSchedule(
+    @Body() data: CreateScheduleDto,
+    @Res() res: Response,
+    @Req() req: Request,
+  ) {
+    const tutor_id = req['user'].id;
+    console.log('create schedule', data);
+    try {
+      await this.tutorService.CreateSchedule(tutor_id, data);
+      return res.status(200).json({
+        data: {
+          message: 'Get all class by tutor success',
+        },
+        status: 200,
+      });
+    } catch (error) {
+      if (error instanceof HttpException) {
+        if (error.getStatus() === 400) {
+          return res.status(400).json({
+            payload: { message: error.message },
+            status: 400,
+          });
+        }
+      }
+    }
+  }
+  @AuthJwtAdminAndTutorAccessProtected()
+  @Get('/get-all-schedule')
+  async GetAllSchedule(@Res() res: Response, @Req() req: Request) {
+    const tutor_id = req['user'].id;
+    const data = await this.tutorService.GetAllSchedule(Number(tutor_id));
+
+    return res.status(200).json({
+      data: {
+        message: 'Get all schedule success',
+        schedules: data,
+      },
+      status: 200,
+    });
+  }
+  @AuthJwtAdminAndTutorAccessProtected()
+  @Get('/get-schedule-detail/:id')
+  async GetScheduleDetail(
+    @Param('id') id: number,
+    @Res() res: Response,
+    @Req() req: Request,
+  ) {
+    const tutor_id = req['user'].id;
+    const data = await this.tutorService.GetDetailSchedule(id, tutor_id);
+    if (!data) {
+      return res
+        .status(404)
+        .json({ message: 'Schedule not found', status: 404 });
+    }
+    return res.status(200).json({
+      data: {
+        message: 'Get schedule detail success',
+        schedule: data,
+      },
+      status: 200,
+    });
+  }
+  @AuthJwtAdminAndTutorAccessProtected()
+  @Post('/update-status-schedule')
+  async UpdateStatusSchedule(
+    @Body() data: UpdateStatusScheduleDto,
+    @Res() res: Response,
+    // @Req() req: Request,
+  ) {
+    const { id, status } = data;
+    try {
+      const result = await this.tutorService.UpdateStatusSchedule(id, status);
+      return res.status(201).json({
+        status: 2000,
+        payload: {
+          message: 'Update status success',
+          schedule: result,
+        },
+      });
+    } catch (error) {
+      return res.status(400).json({
+        status: 4000,
+        payload: {
+          message: error.message,
+        },
+      });
+    }
+  }
+  @AuthJwtAdminAndTutorAccessProtected()
+  @Post('/get-all-schedule-class')
+  async GetAllAttendanceByClass(
+    @Body() data: TutorAttendanceStudentDto,
+    @Res() res: Response,
+    @Req() req: Request,
+  ) {
+    const tutor_id = req['user'].id;
+    const { room, date } = data;
+    console.log(typeof date);
+    const result = await this.tutorService.GetAllScheduleByClass(
+      Number(room),
+      Number(tutor_id),
+      date,
+    );
+    if (!result) {
+      return res
+        .status(400)
+        .json({ message: 'Get all schedule failed', status: 400 });
+    }
+
+    return res.status(200).json({
+      data: {
+        message: 'Get all schedule success',
+        attendance: result,
+      },
+      status: 200,
+    });
+  }
+  @AuthJwtAdminAndTutorAccessProtected()
+  @Post('/mark-present-student-schedule')
+  async ActionMarkPresentStudentBySchedule(
+    @Body() data: TutorMarkPresentDto,
+    @Res() res: Response,
+    @Req() req: Request,
+  ) {
+    const tutor_id = req['user'].id;
+
+    const result = await this.tutorService.ActionMarkPresentStudentBySchedule(
+      data,
+      tutor_id,
+    );
+    if (!result) {
+      return res
+        .status(400)
+        .json({ message: 'Get all schedule failed', status: 400 });
+    }
+
+    return res.status(200).json({
+      data: {
+        message: 'Get all schedule success',
+        attendance: result,
+      },
+      status: 200,
+    });
+  }
+  @AuthJwtAdminAndTutorAccessProtected()
+  @Get('/get-profile-tutor')
+  async GetProfile(@Res() res: Response, @Req() req: Request) {
+    const user_id = req['user'].id;
+    const result = await this.tutorService.GetProfileTutor(user_id);
+    return res.status(200).json({
+      data: {
+        message: 'Get profile success',
+        profile: result,
       },
       status: 200,
     });

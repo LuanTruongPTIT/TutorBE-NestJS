@@ -1,7 +1,15 @@
-import { Column, Entity, JoinColumn, ManyToMany, OneToOne } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToMany,
+  OneToMany,
+  OneToOne,
+} from 'typeorm';
 import { AbstractEntityIntId } from 'src/common/databases/abstracts/abstract.entity';
 import { User } from './user.entity';
 import { ClassEntity } from './class.entity';
+import { AttendanceEntity } from './attendance.entity';
 
 export enum Level {
   PRIMARY = 'PRIMARY',
@@ -93,6 +101,9 @@ export class StudentAdvanceEntity extends AbstractEntityIntId<StudentAdvanceEnti
     cascade: true,
   })
   Class: ClassEntity[];
+
+  @OneToMany(() => AttendanceEntity, (attendance) => attendance.student)
+  attendances: AttendanceEntity[];
   static async findStudentByEmai(email: string) {
     const result = await this.createQueryBuilder('student_advance')
       .where('student_advance.email = :email', { email })

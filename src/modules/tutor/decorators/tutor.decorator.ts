@@ -13,3 +13,9 @@ export function AuthJwtAdminAndTutorAccessProtected(): MethodDecorator {
     ]),
   );
 }
+export function AuthJwtAdminAccessProtected(): MethodDecorator {
+  return applyDecorators(
+    UseGuards(AuthJwtAccessGuard, RolePayloadTypeGuard),
+    SetMetadata(ROLE_TYPE_META_KEY, [ENUM_ROLE_TYPE.SUPER_ADMIN]),
+  );
+}
