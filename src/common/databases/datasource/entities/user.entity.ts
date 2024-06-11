@@ -234,6 +234,7 @@ export class User extends AbstractEntityIntId<User> {
       .orderBy('schedule.start_date', 'ASC')
       .getOne();
     if (!data) {
+      console.log('Data is not found');
       const data = await this.createQueryBuilder('user')
         .select([
           'user.id',
@@ -265,11 +266,11 @@ export class User extends AbstractEntityIntId<User> {
           'activity.link_credential',
           'activity.imageOrganization',
         ])
-        .innerJoin('user.tutor_advance', 'tutor_advance')
-        .innerJoin('tutor_advance.activities', 'activity')
-        .innerJoin('user.class_tutor', 'class_tutor')
-        .innerJoin('class_tutor.course', 'course')
-        .innerJoin('class_tutor.student', 'student')
+        .leftJoin('user.tutor_advance', 'tutor_advance')
+        .leftJoin('tutor_advance.activities', 'activity')
+        .leftJoin('user.class_tutor', 'class_tutor')
+        .leftJoin('class_tutor.course', 'course')
+        .leftJoin('class_tutor.student', 'student')
         .where('user.id = :id', { id })
         .getOne();
       return data;

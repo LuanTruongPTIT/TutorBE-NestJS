@@ -33,6 +33,7 @@ export class AdminService {
   }
 
   async CreateTutor(data: AdminCreateTutorDto) {
+    console.log('data', data);
     const { email } = data;
     const checkUser = await Auth.findOne({
       where: { email },
