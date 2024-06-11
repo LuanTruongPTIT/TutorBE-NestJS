@@ -38,12 +38,16 @@ export class AdminService {
       where: { email },
       relations: ['user'],
     });
+    const checkPhoneNumber = await StudentAdvanceEntity.findOne({
+      where: { phoneNumber: data.phone_number },
+    });
+    if (checkPhoneNumber) {
+      throw new HttpException('Phone number already exists', 422);
+    }
     if (checkUser) {
       throw new HttpException('Email already exists', 422);
     }
-    if (checkUser.user.phoneNumber === data.phone_number) {
-      throw new HttpException('Phone number already exists', 422);
-    }
+
     const role = await Role.findOne({ where: { role_name: 'tutor' } });
     const auth = new Auth();
     auth.email = email;
