@@ -310,6 +310,7 @@ export class TutorService {
     schedule.lesson = lessonCreate;
     schedule.Class = roomClass;
     schedule.topic = data.topic;
+    schedule.date = new Date(date_schedule).toISOString().split('T')[0];
     schedule.description = data.description ? data.description : '';
 
     const durationParts = duration_time.split(':');

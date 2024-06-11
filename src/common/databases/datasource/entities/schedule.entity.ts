@@ -87,6 +87,7 @@ export class ScheduleEntity extends AbstractEntityIntId<ScheduleEntity> {
       .leftJoin('class.course', 'course')
       .addSelect(['course.title'])
       .where('class.tutor = :tutor_id', { tutor_id })
+
       .getMany();
   }
   static async findScheduleById(schedule_id: number, tutor_id: number) {

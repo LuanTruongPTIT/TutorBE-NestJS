@@ -1,4 +1,7 @@
-import { StudentAdvanceEntity } from 'src/common/databases/datasource/entities/student-advance.entity';
+import {
+  Gender,
+  StudentAdvanceEntity,
+} from 'src/common/databases/datasource/entities/student-advance.entity';
 import { HttpException, Injectable } from '@nestjs/common';
 import { User } from 'src/common/databases/datasource/entities/user.entity';
 import { AdminGetAllUserSerialization } from '../serialization/admin.get-all-user.serialization';
@@ -13,6 +16,8 @@ import { AuthService } from 'src/modules/auth/services/auth.service';
 import { ScheduleEntity } from 'src/common/databases/datasource/entities/schedule.entity';
 import { AdminGetAllStudentSerialization } from '../serialization/admin.get-all-student.serialization';
 import { AdminCreateStudentDto } from '../dto/admin.create-student.dto';
+import datasource from 'src/common/databases/datasource';
+import { Course } from 'src/common/databases/datasource/entities/course.entity';
 
 @Injectable()
 export class AdminService {
@@ -93,28 +98,37 @@ export class AdminService {
     if (checkPhone) {
       throw new HttpException('Phone number already exists', 422);
     }
+
     const auth = new Auth();
     auth.email = data.email;
-
     auth.password = (
       await this.authService.createPassword(data.password)
     ).passwordHash;
     auth.role = [await Role.findOne({ where: { role_name: 'student' } })];
     const authCreate = await auth.save();
-
     const user = new User();
     user.email = data.email;
     user.auth = authCreate;
     auth.email_verify = true;
     const userCreate = await user.save();
+    console.log('userCreate', userCreate);
     const student = new StudentAdvanceEntity();
     student.user = userCreate;
     student.firstName = data.firstName;
     student.lastName = data.lastName;
+    student.gender = data.gender as Gender;
+    student.parent_name = data.parent_name;
+    student.school = data.name_school;
+    student.dateOfBirth = data.date_of_birth;
     student.address = data.address;
     student.phoneNumber = data.phone_number;
     student.country = data.country;
     student.imageUrl = data.urls;
-    await student.save();
+    student.level = data.level;
+    await StudentAdvanceEntity.create(student).save();
+  }
+
+  async GetAllCourses() {
+    return await Course.GetAllCourse();
   }
 }

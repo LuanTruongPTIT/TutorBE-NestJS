@@ -2,6 +2,7 @@ import { AbstractEntityIntId } from 'src/common/databases/abstracts/abstract.ent
 import { Column, Entity, ManyToOne } from 'typeorm';
 import { StudentAdvanceEntity } from './student-advance.entity';
 import { ScheduleEntity } from './schedule.entity';
+import { ClassEntity } from './class.entity';
 
 export enum status_attendance {
   CANCEL = 'Cancel',
@@ -29,7 +30,8 @@ export class AttendanceEntity extends AbstractEntityIntId<AttendanceEntity> {
     end_date: string,
   ) {
     console.log(class_id, tutor_id, start_date, end_date);
-    return await this.createQueryBuilder('attendance')
+    console.log(class_id, tutor_id, start_date, end_date);
+    const data = await this.createQueryBuilder('attendance')
       .select([
         'attendance.id',
         'attendance.present',
@@ -51,5 +53,27 @@ export class AttendanceEntity extends AbstractEntityIntId<AttendanceEntity> {
       })
       .andWhere('schedule.duration_time <= :end_date', { end_date: end_date })
       .getMany();
+    if (data.length == 0) {
+      const checkClass = await ClassEntity.findOne({
+        where: {
+          id: class_id,
+          tutor: {
+            id: tutor_id,
+          },
+        },
+      });
+      console.log(checkClass);
+      return [
+        {
+          attendance_id: null,
+          date: null,
+          // day: 23,
+          room: checkClass.name,
+          present: false,
+          studentId: 0,
+        },
+      ];
+    }
+    return data;
   }
 }

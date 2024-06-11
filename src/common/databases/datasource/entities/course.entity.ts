@@ -69,4 +69,23 @@ export class Course extends AbstractEntityIntId<Course> {
       },
     });
   }
+  static async GetAllCourse() {
+    return await this.createQueryBuilder('course')
+      .select([
+        'course.id',
+        'course.title',
+        'course.price',
+        'class.id',
+        'class.name',
+        'student_advance.id',
+        'student_advance.firstName',
+        'tutor.id',
+        'tutor.firstName',
+      ])
+      .leftJoin('course.Class', 'class')
+      .leftJoin('class.student', 'student_advance')
+      .leftJoin('class.tutor', 'tutor')
+      // .leftJoinAndSelect('class.student', 'student')
+      .getMany();
+  }
 }

@@ -10,7 +10,8 @@ export class TutorAttendanceStudentSerialization {
   @Expose()
   @Transform(({ obj }) => {
     console.log(obj);
-    const dateStr = obj.schedule.date;
+    if (!obj.schedule?.date) return null;
+    const dateStr = obj.schedule?.date;
     const date = new Date(dateStr);
     const month = date.getMonth() + 1;
     const year = date.getFullYear();

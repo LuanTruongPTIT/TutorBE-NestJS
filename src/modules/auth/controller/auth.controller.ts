@@ -93,7 +93,7 @@ export class AuthController {
     console.log('data', data);
     const { email, password } = data;
     const auth = await this.authService.getUserByEmail(email);
-
+    console.log('auth', auth);
     if (!auth) {
       return res.status(422).json({
         status: 400,

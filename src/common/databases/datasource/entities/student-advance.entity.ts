@@ -12,14 +12,10 @@ import { ClassEntity } from './class.entity';
 import { AttendanceEntity } from './attendance.entity';
 
 export enum Level {
-  PRIMARY = 'PRIMARY',
-  SECONDARY = 'SECONDARY',
-  TERTIARY = 'TERTIARY',
-  QUATERNARY = 'QUATERNARY',
-  QUINARY = 'QUINARY',
-  SENIORITY = 'SENIORITY',
-  POSTGRADUATE = 'POSTGRADUATE',
-  DOCTORATE = 'DOCTORATE',
+  PRIMARY = 'Primary',
+  SECONDARY = 'Secondary',
+  HIGH = 'High',
+  OTHER = 'Other',
 }
 export enum Gender {
   MALE = 'MALE',

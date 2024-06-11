@@ -112,7 +112,7 @@ export class AdminController {
   }
 
   @AuthJwtAdminAccessProtected()
-  @Get('/create-student-by-admin')
+  @Post('/create-student-by-admin')
   async CreateStudent(
     @Body() data: AdminCreateStudentDto,
     @Res() res: Response,
@@ -127,6 +127,7 @@ export class AdminController {
         status: 200,
       });
     } catch (error) {
+      console.log(error);
       if (error instanceof HttpException) {
         if (error.getStatus() === 422) {
           return res.status(422).json({
@@ -136,5 +137,17 @@ export class AdminController {
         }
       }
     }
+  }
+  @AuthJwtAdminAccessProtected()
+  @Get('/get-all-course-by-admin')
+  async GetAllCourse(@Res() res: Response) {
+    const data = await this.adminService.GetAllCourses();
+    return res.status(200).json({
+      data: {
+        message: 'Get all course success',
+        course: data,
+      },
+      status: 200,
+    });
   }
 }
