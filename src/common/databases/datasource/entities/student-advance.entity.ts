@@ -128,4 +128,34 @@ export class StudentAdvanceEntity extends AbstractEntityIntId<StudentAdvanceEnti
   ) {
     return this.update({ id }, data);
   }
+
+  static async findAllStudent() {
+    return (
+      this.createQueryBuilder('student_advance')
+        .select([
+          'student_advance.id',
+          'student_advance.firstName',
+          'student_advance.lastName',
+          'student_advance.email',
+          'student_advance.imageUrl',
+          'student_advance.phoneNumber',
+          'student_advance.country',
+          'student_advance.status',
+          'student_advance.gender',
+          'student_advance.address',
+          'student_advance.level',
+          'student_advance.school',
+          'student_advance.parent_name',
+          'role.id',
+          'role.role_name',
+          'student_advance.createdAt',
+        ])
+        .leftJoin('student_advance.user', 'user')
+        .leftJoin('user.auth', 'auth')
+        .leftJoin('auth.role', 'role')
+        .where('role.role_name = :role', { role: 'student' })
+        // .getSql();
+        .getMany()
+    );
+  }
 }

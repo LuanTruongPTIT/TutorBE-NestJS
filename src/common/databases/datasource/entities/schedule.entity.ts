@@ -132,4 +132,34 @@ export class ScheduleEntity extends AbstractEntityIntId<ScheduleEntity> {
       .andWhere('schedule.date = :date', { date })
       .getOne();
   }
+
+  static async findAllScheduleByAdmin() {
+    return (
+      this.createQueryBuilder('schedule')
+        .select([
+          'course.id',
+          'course.title',
+          'class.id',
+          'class.name',
+          'tutor.id',
+          'tutor.firstName',
+          'tutor.lastName',
+          'student.id',
+          'schedule.id',
+          'schedule.topic',
+          'schedule.start_date',
+          'schedule.duration_time',
+          'schedule.formal',
+          'schedule.status',
+          'schedule.reason_cancel',
+        ])
+        .leftJoin('schedule.Class', 'class')
+        .leftJoin('class.student', 'student')
+        .leftJoin('class.course', 'course')
+        .leftJoin('class.tutor', 'tutor')
+        .orderBy('schedule.date', 'ASC')
+        // .getMany();
+        .getSql()
+    );
+  }
 }

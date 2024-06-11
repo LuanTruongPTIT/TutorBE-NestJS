@@ -1,3 +1,4 @@
+import { StudentAdvanceEntity } from 'src/common/databases/datasource/entities/student-advance.entity';
 import { HttpException, Injectable } from '@nestjs/common';
 import { User } from 'src/common/databases/datasource/entities/user.entity';
 import { AdminGetAllUserSerialization } from '../serialization/admin.get-all-user.serialization';
@@ -9,6 +10,9 @@ import { AdminCreateTutorDto } from '../dto/admin.create-tutor.dto';
 import { Auth } from 'src/common/databases/datasource/entities/auth.entity';
 import { Role } from 'src/common/databases/datasource/entities/role.entity';
 import { AuthService } from 'src/modules/auth/services/auth.service';
+import { ScheduleEntity } from 'src/common/databases/datasource/entities/schedule.entity';
+import { AdminGetAllStudentSerialization } from '../serialization/admin.get-all-student.serialization';
+import { AdminCreateStudentDto } from '../dto/admin.create-student.dto';
 
 @Injectable()
 export class AdminService {
@@ -30,9 +34,15 @@ export class AdminService {
 
   async CreateTutor(data: AdminCreateTutorDto) {
     const { email } = data;
-    const checkUser = await Auth.findOne({ where: { email } });
+    const checkUser = await Auth.findOne({
+      where: { email },
+      relations: ['user'],
+    });
     if (checkUser) {
-      throw new HttpException('Email already exists', 400);
+      throw new HttpException('Email already exists', 422);
+    }
+    if (checkUser.user.phoneNumber === data.phone_number) {
+      throw new HttpException('Phone number already exists', 422);
     }
     const role = await Role.findOne({ where: { role_name: 'tutor' } });
     const auth = new Auth();
@@ -59,5 +69,47 @@ export class AdminService {
     await tutor.save();
   }
 
-  async GetStudent() {}
+  async GeAllStudent() {
+    const data = await StudentAdvanceEntity.findAllStudent();
+    return AdminGetAllStudentSerialization.fromPlainArray(data);
+  }
+  async GetAllSchedule() {
+    return await ScheduleEntity.findAllScheduleByAdmin();
+  }
+
+  async CreateStudent(data: AdminCreateStudentDto) {
+    const checkEmail = await User.findOne({ where: { email: data.email } });
+    if (checkEmail) {
+      throw new HttpException('Email already exists', 422);
+    }
+    const checkPhone = await StudentAdvanceEntity.findOne({
+      where: { phoneNumber: data.phone_number },
+    });
+    if (checkPhone) {
+      throw new HttpException('Phone number already exists', 422);
+    }
+    const auth = new Auth();
+    auth.email = data.email;
+
+    auth.password = (
+      await this.authService.createPassword(data.password)
+    ).passwordHash;
+    auth.role = [await Role.findOne({ where: { role_name: 'student' } })];
+    const authCreate = await auth.save();
+
+    const user = new User();
+    user.email = data.email;
+    user.auth = authCreate;
+    auth.email_verify = true;
+    const userCreate = await user.save();
+    const student = new StudentAdvanceEntity();
+    student.user = userCreate;
+    student.firstName = data.firstName;
+    student.lastName = data.lastName;
+    student.address = data.address;
+    student.phoneNumber = data.phone_number;
+    student.country = data.country;
+    student.imageUrl = data.urls;
+    await student.save();
+  }
 }

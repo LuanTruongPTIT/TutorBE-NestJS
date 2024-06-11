@@ -1,9 +1,19 @@
-import { Body, Controller, Get, Param, Post, Query, Res } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpException,
+  Param,
+  Post,
+  Query,
+  Res,
+} from '@nestjs/common';
 import { AdminService } from '../services/admin.service';
 import { AuthJwtAdminAccessProtected } from 'src/modules/auth/decorators/auth.jwt.decorator';
 import { Response } from 'express';
 import { PageOptionsDto } from 'src/common/pagination/dto/page.options.dto';
 import { AdminCreateTutorDto } from '../dto/admin.create-tutor.dto';
+import { AdminCreateStudentDto } from '../dto/admin.create-student.dto';
 @Controller()
 export class AdminController {
   constructor(private readonly adminService: AdminService) {}
@@ -56,16 +66,75 @@ export class AdminController {
   @AuthJwtAdminAccessProtected()
   @Post('/create-tutor-by-admin')
   async CreateTutor(@Body() data: AdminCreateTutorDto, @Res() res: Response) {
-    await this.adminService.CreateTutor(data);
-    // return {
-    //   message: 'Create tutor success',
-    //   status: 200,
-    // };
+    try {
+      await this.adminService.CreateTutor(data);
+      return res.status(200).json({
+        data: {
+          message: 'Create tutor success',
+        },
+        status: 200,
+      });
+    } catch (error) {
+      if (error instanceof HttpException) {
+        if (error.getStatus() === 422) {
+          return res.status(422).json({
+            payload: { message: error.message },
+            status: 400,
+          });
+        }
+      }
+    }
+  }
+  @AuthJwtAdminAccessProtected()
+  @Get('/get-all-student')
+  async GeAllStudent(@Res() res: Response) {
+    const data = await this.adminService.GeAllStudent();
     return res.status(200).json({
       data: {
-        message: 'Create tutor success',
+        message: 'Get all student success',
+        student: data,
       },
       status: 200,
     });
+  }
+
+  @AuthJwtAdminAccessProtected()
+  @Get('/get-all-schedule')
+  async GeAllSchedule(@Res() res: Response) {
+    const data = await this.adminService.GetAllSchedule();
+    return res.status(200).json({
+      data: {
+        message: 'Get all schedule success',
+        schedule: data,
+      },
+      status: 200,
+    });
+  }
+
+  @AuthJwtAdminAccessProtected()
+  @Get('/create-student-by-admin')
+  async CreateStudent(
+    @Body() data: AdminCreateStudentDto,
+    @Res() res: Response,
+  ) {
+    try {
+      const result = await this.adminService.CreateStudent(data);
+      return res.status(200).json({
+        data: {
+          message: 'Create student success',
+          student: result,
+        },
+        status: 200,
+      });
+    } catch (error) {
+      if (error instanceof HttpException) {
+        if (error.getStatus() === 422) {
+          return res.status(422).json({
+            payload: { message: error.message },
+            status: 400,
+          });
+        }
+      }
+    }
   }
 }
