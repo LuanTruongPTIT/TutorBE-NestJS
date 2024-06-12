@@ -18,4 +18,7 @@ export class SubjectEntity extends AbstractEntityIntId<SubjectEntity> {
       .where('subject.name IN (:...name)', { name })
       .getMany();
   }
+  static async findAllByName(name: string) {
+    return this.findOne({ where: { name } });
+  }
 }

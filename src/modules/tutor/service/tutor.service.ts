@@ -63,8 +63,15 @@ export class TutorService {
       throw new Error('User not found');
     }
     const tutorRegis = new ReigsterTutorEntity();
+    const subjectArray: SubjectEntity[] = [];
     if (subject) {
-      tutorRegis.subject = await SubjectEntity.findByName(subject);
+      Promise.all(
+        subject.map(async (item) => {
+          const subject = await SubjectEntity.findAllByName(item);
+          subjectArray.push(subject);
+        }),
+      );
+      tutorRegis.subject = subjectArray;
     }
 
     if (data.imgUrl) {
