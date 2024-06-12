@@ -13,7 +13,6 @@ import { SubjectEntity } from './subject.entity';
 import { District } from './district.entity';
 import { User } from './user.entity';
 import { ImageEntity } from './image.entity';
-import { CertificationEntity } from './certification.entity';
 
 export enum DegreeType {
   COLLEGE = 'college',
@@ -92,11 +91,6 @@ export class ReigsterTutorEntity extends AbstractEntityIntId<ReigsterTutorEntity
   read: boolean;
   topic: string;
   label: string[];
-  @OneToOne(
-    () => CertificationEntity,
-    (certification) => certification.register_tutor,
-  )
-  certification: CertificationEntity;
 
   static async getApplicationTutor() {
     return this.find({
