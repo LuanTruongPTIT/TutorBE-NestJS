@@ -48,8 +48,8 @@ export class TutorService {
   async becomeTutor(data: BecomeTutorDto, user_id: number) {
     const {
       degree,
-      degree_type,
-      specializations,
+      degreeType,
+      specialization,
       bio,
       universityName,
       subject,
@@ -75,12 +75,12 @@ export class TutorService {
     }
     tutorRegis.college = universityName;
     tutorRegis.degree = degree;
-    tutorRegis.degree_type = degree_type;
-    tutorRegis.specializations = specializations;
+    tutorRegis.degree_type = degreeType;
+    tutorRegis.specializations = specialization;
     tutorRegis.bio = bio;
     tutorRegis.salary = Number(salary);
-    user.firstName = data.first_name;
-    user.lastName = data.last_name;
+    user.firstName = data.firstName;
+    user.lastName = data.lastName;
     tutorRegis.start_date_study_year = startDate;
     tutorRegis.end_date_study_year = endDate;
     tutorRegis.is_age_18 = data.isAge18 ? 1 : 0;
