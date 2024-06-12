@@ -18,6 +18,8 @@ import { AdminGetAllStudentSerialization } from '../serialization/admin.get-all-
 import { AdminCreateStudentDto } from '../dto/admin.create-student.dto';
 import datasource from 'src/common/databases/datasource';
 import { Course } from 'src/common/databases/datasource/entities/course.entity';
+import { AdminGetAllCourseSerialization } from '../serialization/admin.get-all-course.serialization';
+import { AdminGetAllScheduleSerialization } from '../serialization/admin.get-all-schedule.serialization';
 
 @Injectable()
 export class AdminService {
@@ -84,7 +86,8 @@ export class AdminService {
     return AdminGetAllStudentSerialization.fromPlainArray(data);
   }
   async GetAllSchedule() {
-    return await ScheduleEntity.findAllScheduleByAdmin();
+    const data = await ScheduleEntity.findAllScheduleByAdmin();
+    return AdminGetAllScheduleSerialization.fromPlainArray(data);
   }
 
   async CreateStudent(data: AdminCreateStudentDto) {
@@ -129,6 +132,34 @@ export class AdminService {
   }
 
   async GetAllCourses() {
-    return await Course.GetAllCourse();
+    const courses = (await Course.GetAllCourse()) as any[];
+    // return courses;
+
+    return Promise.all(
+      courses.map((item) => {
+        const plain = new AdminGetAllCourseSerialization();
+        plain.id = item.id;
+        plain.title = item.title;
+        plain.fee = item.price;
+        plain.createAt = new Date(item.createdAt).toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric',
+          timeZone: 'UTC',
+        });
+        plain.tutor =
+          item.user.tutor_advance.first_name +
+          ' ' +
+          item.user.tutor_advance.last_name;
+        plain.count =
+          item.Class.length !== 0
+            ? item.Class.reduce(
+                (acc, classItem) => acc + classItem.student.length,
+                0,
+              )
+            : 0;
+        return plain;
+      }),
+    );
   }
 }

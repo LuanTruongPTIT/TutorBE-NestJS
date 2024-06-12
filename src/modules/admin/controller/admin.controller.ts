@@ -99,7 +99,7 @@ export class AdminController {
   }
 
   @AuthJwtAdminAccessProtected()
-  @Get('/get-all-schedule')
+  @Get('/get-all-schedule-by-admin')
   async GeAllSchedule(@Res() res: Response) {
     const data = await this.adminService.GetAllSchedule();
     return res.status(200).json({

@@ -79,13 +79,17 @@ export class Course extends AbstractEntityIntId<Course> {
         'class.name',
         'student_advance.id',
         'student_advance.firstName',
-        'tutor.id',
-        'tutor.firstName',
+        'course.createdAt',
+        'user.id',
+        'tutor_advance.id',
+        'tutor_advance.first_name',
+        'tutor_advance.last_name',
       ])
       .leftJoin('course.Class', 'class')
       .leftJoin('class.student', 'student_advance')
-      .leftJoin('class.tutor', 'tutor')
-      // .leftJoinAndSelect('class.student', 'student')
+      .leftJoin('course.user', 'user')
+      .leftJoin('user.tutor_advance', 'tutor_advance')
+
       .getMany();
   }
 }

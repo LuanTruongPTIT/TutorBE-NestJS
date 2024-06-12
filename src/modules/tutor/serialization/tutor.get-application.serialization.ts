@@ -90,6 +90,8 @@ export class TutorApplicationInterview {
   })
   @Expose()
   in_stage: string;
+  @Expose()
+  createdAt: string;
 
   static fromPlain(plain: ReigsterTutorEntity[]) {
     return plain.map((item, index) => {

@@ -172,7 +172,7 @@ export class ReigsterTutorEntity extends AbstractEntityIntId<ReigsterTutorEntity
         ]),
       },
       relations: ['user', 'subject', 'image'],
-      select: ['user', 'status', 'updatedAt', 'id'],
+      select: ['user', 'status', 'updatedAt', 'id', 'createdAt'],
     });
   }
 }

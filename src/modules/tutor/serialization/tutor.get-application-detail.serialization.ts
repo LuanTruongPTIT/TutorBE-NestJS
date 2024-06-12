@@ -16,7 +16,7 @@ export class TutorGetApplicationDetailSerialization {
   readonly degree: string;
 
   @Expose()
-  readonly degreeType: string;
+  readonly degree_type: string;
 
   @Expose()
   readonly bio: string;
