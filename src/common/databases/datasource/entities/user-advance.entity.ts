@@ -35,8 +35,8 @@ export class ReigsterTutorEntity extends AbstractEntityIntId<ReigsterTutorEntity
   @Column({ type: 'varchar', length: 100, nullable: true })
   degree: string;
 
-  @Column({ type: 'enum', enum: DegreeType, nullable: true })
-  degree_type: DegreeType;
+  @Column({ type: 'varchar', nullable: true })
+  degree_type: string;
 
   @Column({ type: 'varchar', length: 100, nullable: true })
   specializations: string;

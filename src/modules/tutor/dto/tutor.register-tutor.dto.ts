@@ -3,7 +3,7 @@ import { DegreeType } from 'src/common/databases/datasource/entities/user-advanc
 export class BecomeTutorDto {
   readonly bio: string;
   readonly degree: string;
-  readonly degree_type: DegreeType;
+  readonly degree_type: string;
   readonly salary: number;
   readonly specializations: string;
   readonly subject: string[];
