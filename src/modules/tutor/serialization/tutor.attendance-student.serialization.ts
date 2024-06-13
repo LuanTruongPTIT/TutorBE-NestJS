@@ -3,7 +3,7 @@ import { Expose, plainToInstance, Transform } from 'class-transformer';
 export class TutorAttendanceStudentSerialization {
   @Expose()
   @Transform(({ obj }) => {
-    return obj.id;
+    return obj.id ? obj.id : 0;
   })
   attendance_id: number;
 
@@ -25,7 +25,8 @@ export class TutorAttendanceStudentSerialization {
 
   @Expose()
   @Transform(({ obj }) => {
-    return obj.schedule.Class.name;
+    console.log(obj);
+    return obj.room;
   })
   Class: string;
 
@@ -46,7 +47,7 @@ export class TutorAttendanceStudentSerialization {
   @Expose()
   @Transform(({ obj }) => {
     console.log(obj);
-    return obj.schedule.Class.id;
+    return obj.schedule?.Class.id;
   })
   classId: number;
   static fromPlainArray(plain: any[]) {

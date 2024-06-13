@@ -11,6 +11,7 @@ export class HelperEncryptionService {
   constructor(private readonly jwtService: JwtService) {}
 
   jwtEncrypt(payload: Record<string, any>, options: IHelperJwtOptions): string {
+    console.log(options);
     return this.jwtService.sign(payload, {
       secret: options.secretKey,
       expiresIn: options.expiredIn,

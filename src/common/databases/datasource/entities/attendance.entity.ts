@@ -65,7 +65,7 @@ export class AttendanceEntity extends AbstractEntityIntId<AttendanceEntity> {
       console.log(checkClass);
       return [
         {
-          attendance_id: null,
+          id: null,
           date: null,
           // day: 23,
           room: checkClass.name,

@@ -119,6 +119,8 @@ export class AdminService {
     student.user = userCreate;
     student.firstName = data.firstName;
     student.lastName = data.lastName;
+    student.fullName = data.firstName + ' ' + data.lastName;
+    student.email = data.email;
     student.gender = data.gender as Gender;
     student.parent_name = data.parent_name;
     student.school = data.name_school;
